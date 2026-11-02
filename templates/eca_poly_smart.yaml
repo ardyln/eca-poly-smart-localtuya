@@ -1,0 +1,168 @@
+# LocalTuya (xZetsubou/hass-localtuya) device template
+# E.C.A. Poly Smart Wi-Fi boiler thermostat (receiver + RF room unit)
+# Tuya product ID: rufjdpbdogijhq89, protocol 3.4
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Tested with hass-localtuya 2026.10.0. See README.md for the DP table,
+# what is confirmed vs. inferred, and known issues.
+#
+# Temperatures on numbers 102-112 are raw x10 (180 = 18.0 C) because number
+# scaling in hass-localtuya 2026.10.0 re-applies on every read (issue #893).
+
+- climate:
+    friendly_name: Thermostat
+    entity_category: None
+    target_temperature_dp: '16'
+    current_temperature_dp: '24'
+    temperature_step: '0.5'
+    min_temperature: 5.0
+    max_temperature: 35.0
+    precision: '0.1'
+    target_precision: '0.1'
+    hvac_mode_dp: '108'
+    hvac_mode_set:
+      heat: heat
+      cool: cool
+    hvac_action_dp: '101'
+    hvac_action_set:
+      heating: true
+      idle: false
+    eco_dp: '2'
+    eco_value: eco
+    preset_dp: '2'
+    preset_set:
+      comfort: comfort
+      holiday: away
+      program: Program
+      rf_thermostat: Thermostat
+      manual: Manual
+    swing_modes: {}
+    swing_horizontal_modes: {}
+    fan_speed_list: {}
+    temperature_unit: celsius
+    id: '1'
+    platform: climate
+- sensor:
+    friendly_name: Work state
+    entity_category: diagnostic
+    id: '3'
+    platform: sensor
+- binary_sensor:
+    friendly_name: Boiler relay
+    entity_category: diagnostic
+    state_on: 'True'
+    id: '101'
+    platform: binary_sensor
+- sensor:
+    friendly_name: Room unit link
+    entity_category: diagnostic
+    id: '106'
+    platform: sensor
+- sensor:
+    friendly_name: Heat/cool mode
+    entity_category: diagnostic
+    id: '108'
+    platform: sensor
+- binary_sensor:
+    friendly_name: Window open
+    entity_category: diagnostic
+    state_on: 'True'
+    device_class: window
+    id: '118'
+    platform: binary_sensor
+- binary_sensor:
+    friendly_name: In location (unconfirmed)
+    entity_category: diagnostic
+    state_on: 'True'
+    id: '120'
+    platform: binary_sensor
+- number:
+    friendly_name: Eco heat temp (x10)
+    entity_category: config
+    min_value: 50.0
+    max_value: 350.0
+    step_size: 5.0
+    restore_on_reconnect: false
+    is_passive_entity: false
+    id: '102'
+    platform: number
+- number:
+    friendly_name: Comfort heat temp (x10)
+    entity_category: config
+    min_value: 50.0
+    max_value: 350.0
+    step_size: 5.0
+    restore_on_reconnect: false
+    is_passive_entity: false
+    id: '103'
+    platform: number
+- number:
+    friendly_name: Holiday heat temp (x10)
+    entity_category: config
+    min_value: 0.0
+    max_value: 350.0
+    step_size: 5.0
+    restore_on_reconnect: false
+    is_passive_entity: false
+    id: '104'
+    platform: number
+- number:
+    friendly_name: Location inside heat temp (x10)
+    entity_category: config
+    min_value: 50.0
+    max_value: 350.0
+    step_size: 5.0
+    restore_on_reconnect: false
+    is_passive_entity: false
+    id: '111'
+    platform: number
+- number:
+    friendly_name: Location outside heat temp (x10)
+    entity_category: config
+    min_value: 50.0
+    max_value: 350.0
+    step_size: 5.0
+    restore_on_reconnect: false
+    is_passive_entity: false
+    id: '112'
+    platform: number
+- sensor:
+    friendly_name: Eco cool temp
+    entity_category: diagnostic
+    unit_of_measurement: °C
+    device_class: temperature
+    scaling: 0.1
+    id: '113'
+    platform: sensor
+- sensor:
+    friendly_name: Comfort cool temp
+    entity_category: diagnostic
+    unit_of_measurement: °C
+    device_class: temperature
+    scaling: 0.1
+    id: '114'
+    platform: sensor
+- sensor:
+    friendly_name: Holiday cool temp
+    entity_category: diagnostic
+    unit_of_measurement: °C
+    device_class: temperature
+    scaling: 0.1
+    id: '115'
+    platform: sensor
+- sensor:
+    friendly_name: Location inside cool temp (unconfirmed)
+    entity_category: diagnostic
+    unit_of_measurement: °C
+    device_class: temperature
+    scaling: 0.1
+    id: '116'
+    platform: sensor
+- sensor:
+    friendly_name: Location outside cool temp (unconfirmed)
+    entity_category: diagnostic
+    unit_of_measurement: °C
+    device_class: temperature
+    scaling: 0.1
+    id: '117'
+    platform: sensor
