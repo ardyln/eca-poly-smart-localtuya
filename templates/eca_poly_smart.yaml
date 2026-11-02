@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Tested with hass-localtuya 2026.10.0. See README.md for the DP table,
-# what is confirmed vs. inferred, and known issues.
+# device behaviour, and known issues.
 #
 # Temperatures on numbers 102-112 are raw x10 (180 = 18.0 C) because number
 # scaling in hass-localtuya 2026.10.0 re-applies on every read (issue #893).
@@ -16,7 +16,7 @@
     current_temperature_dp: '24'
     temperature_step: '0.5'
     min_temperature: 5.0
-    max_temperature: 35.0
+    max_temperature: 40.0
     precision: '0.1'
     target_precision: '0.1'
     hvac_mode_dp: '108'
@@ -36,6 +36,7 @@
       program: Program
       rf_thermostat: Thermostat
       manual: Manual
+      location: Location
     swing_modes: {}
     swing_horizontal_modes: {}
     fan_speed_list: {}
@@ -71,7 +72,7 @@
     id: '118'
     platform: binary_sensor
 - binary_sensor:
-    friendly_name: In location (unconfirmed)
+    friendly_name: User mode switch status
     entity_category: diagnostic
     state_on: 'True'
     id: '120'
@@ -80,7 +81,7 @@
     friendly_name: Eco heat temp (x10)
     entity_category: config
     min_value: 50.0
-    max_value: 350.0
+    max_value: 400.0
     step_size: 5.0
     restore_on_reconnect: false
     is_passive_entity: false
@@ -90,7 +91,7 @@
     friendly_name: Comfort heat temp (x10)
     entity_category: config
     min_value: 50.0
-    max_value: 350.0
+    max_value: 400.0
     step_size: 5.0
     restore_on_reconnect: false
     is_passive_entity: false
@@ -99,8 +100,8 @@
 - number:
     friendly_name: Holiday heat temp (x10)
     entity_category: config
-    min_value: 0.0
-    max_value: 350.0
+    min_value: 50.0
+    max_value: 400.0
     step_size: 5.0
     restore_on_reconnect: false
     is_passive_entity: false
@@ -110,7 +111,7 @@
     friendly_name: Location inside heat temp (x10)
     entity_category: config
     min_value: 50.0
-    max_value: 350.0
+    max_value: 400.0
     step_size: 5.0
     restore_on_reconnect: false
     is_passive_entity: false
@@ -120,7 +121,7 @@
     friendly_name: Location outside heat temp (x10)
     entity_category: config
     min_value: 50.0
-    max_value: 350.0
+    max_value: 400.0
     step_size: 5.0
     restore_on_reconnect: false
     is_passive_entity: false
@@ -151,7 +152,7 @@
     id: '115'
     platform: sensor
 - sensor:
-    friendly_name: Location inside cool temp (unconfirmed)
+    friendly_name: Location inside cool temp
     entity_category: diagnostic
     unit_of_measurement: °C
     device_class: temperature
@@ -159,7 +160,7 @@
     id: '116'
     platform: sensor
 - sensor:
-    friendly_name: Location outside cool temp (unconfirmed)
+    friendly_name: Location outside cool temp
     entity_category: diagnostic
     unit_of_measurement: °C
     device_class: temperature

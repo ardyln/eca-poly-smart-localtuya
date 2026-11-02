@@ -16,7 +16,8 @@ E.C.A. sells the thermostat with its own app, "E.C.A. Poly Smart". Underneath it
   - **comfort**, **eco**, **away** (Holiday) and **Program**, the four modes the app offers
   - **Thermostat**, which hands control back to the RF room unit
   - **Manual**, which the device switches to by itself when a target temperature is set
-- **Sensors** for the work state, the RF link to the room unit, heat/cool mode, the boiler relay, the window-open flag, and the cooling-mode temperatures.
+  - **Location**, the app's geofence mode (driven by DP 110, which the template does not expose)
+- **Sensors** for the work state, the RF link to the room unit, heat/cool mode, the boiler relay, the window-open flag, the user mode switch status, and the cooling-mode temperatures.
 - **Numbers** for the comfort, eco, holiday and location heating temperatures.
 
 ## Install
@@ -28,34 +29,42 @@ E.C.A. sells the thermostat with its own app, "E.C.A. Poly Smart". Underneath it
 
 ## DP map
 
-**Confirmed** means checked against the Tuya app: each value was changed from Home Assistant and the app was seen to show the same change.
+This is the device's official thing model from the Tuya Cloud API (`/v2.0/cloud/thing/{device_id}/model`). All temperatures are integers ×10 with step 5 (0.5 °C). The temperature settings range from 50 to 400 (5–40 °C); the room temperature ranges from −200 to 600.
 
-| DP | Tuya code | Type | Meaning | Status |
-|---|---|---|---|---|
-| 1 | `switch` | bool | Power | confirmed |
-| 2 | `mode` | enum | Operating mode. The app sets `comfort`, `eco`, `holiday`, `program`; the device also reports `rf_thermostat` and `manual` | confirmed |
-| 3 | `work_state` | enum | Current mode (read-only mirror of DP 2) | confirmed |
-| 16 | `temp_set` | int ×10 | Target temperature | confirmed |
-| 24 | `temp_current` | int ×10 | Room temperature (from the RF room unit) | confirmed |
-| 101 | `relay_status` | bool | Boiler relay on/off | confirmed |
-| 102 | `eco_mode_temp_heat` | int ×10 | Eco temperature, heating | confirmed |
-| 103 | `comfort_mode_temp_heat` | int ×10 | Comfort temperature, heating | confirmed |
-| 104 | `holiday_mode_temp_heat` | int ×10 | Holiday temperature, heating | confirmed |
-| 106 | `rf_thermostat_pair_status` | enum | RF link: `online` (app: "Paired"), `offline`, `timeout`, `match_mode`, `not_match` | confirmed |
-| 108 | `heating_mode` | enum | `heat` / `cool` | confirmed |
-| 111 | `location_inside_temp_heat` | int ×10 | Location mode (geofence), inside temperature, heating | from the code name |
-| 112 | `location_outside_temp_heat` | int ×10 | Location mode, outside temperature, heating | from the code name |
-| 113 | `eco_mode_temp_cool` | int ×10 | Eco temperature, cooling | confirmed |
-| 114 | `comfort_mode_temp_cool` | int ×10 | Comfort temperature, cooling | confirmed |
-| 115 | `holiday_mode_temp_cool` | int ×10 | Holiday temperature, cooling | confirmed |
-| 116 | probably `location_inside_temp_cool` | int ×10 | Location inside, cooling | inferred |
-| 117 | probably `location_outside_temp_cool` | int ×10 | Location outside, cooling | inferred |
-| 118 | probably `window_open_status` | bool | Open-window detection | inferred, not yet seen to trigger |
-| 120 | probably `set_location_inside` | bool | In/out of location | inferred; **ignores writes**, so it's read-only here |
+| DP | Tuya code | Access | Type | Meaning | In template |
+|---|---|---|---|---|---|
+| 1 | `switch` | rw | bool | Power | climate on/off |
+| 2 | `mode` | rw | enum | Operating mode: `eco`, `comfort`, `holiday`, `program`, `manual`, `location`, `rf_thermostat` | climate presets |
+| 3 | `work_state` | ro | enum | Current mode (same values as DP 2) | sensor |
+| 16 | `temp_set` | rw | value | Target temperature | climate target |
+| 24 | `temp_current` | ro | value | Room temperature (from the RF room unit) | climate current |
+| 72 | `week_program_5` | rw | raw | Weekly program (binary) | – |
+| 101 | `relay_status` | ro | bool | Boiler relay on/off | binary sensor, climate action |
+| 102 | `eco_mode_temp_heat` | rw | value | Eco temperature, heating | number |
+| 103 | `comfort_mode_temp_heat` | rw | value | Comfort temperature, heating | number |
+| 104 | `holiday_mode_temp_heat` | rw | value | Holiday temperature, heating | number |
+| 105 | `unpair_rf_thermostat` | wr | bool | Unpair the RF room unit | – |
+| 106 | `rf_thermostat_pair_status` | ro | enum | RF link: `online` (app: "Paired"), `offline`, `timeout`, `match_mode`, `not_match` | sensor |
+| 107 | `clear_program_mode` | wr | bool | Clear the weekly program | – |
+| 108 | `heating_mode` | rw | enum | `heat` / `cool` | climate hvac mode |
+| 109 | `set_mode_settings_default` | wr | bool | Reset the mode temperatures to defaults | – |
+| 110 | `set_location_inside` | wr | bool | Set in/out of location (geofence) | – |
+| 111 | `location_inside_temp_heat` | rw | value | Location inside temperature, heating | number |
+| 112 | `locationoutside_temp_heat` | rw | value | Location outside temperature, heating | number |
+| 113 | `eco_mode_temp_cool` | rw | value | Eco temperature, cooling | sensor |
+| 114 | `comfort_mode_temp_cool` | rw | value | Comfort temperature, cooling | sensor |
+| 115 | `holiday_mode_temp_cool` | rw | value | Holiday temperature, cooling | sensor |
+| 116 | `location_inside_temp_cool` | rw | value | Location inside temperature, cooling | sensor |
+| 117 | `locationoutside_temp_cool` | rw | value | Location outside temperature, cooling | sensor |
+| 118 | `window_open_status` | ro | bool | Open window detected | binary sensor |
+| 119 | `rf_message` | ro | raw | RF message (binary) | – |
+| 120 | `user_mode_switch_status` | ro | bool | User mode switch status | binary sensor |
+
+"wr" DPs are write-only commands. The device never reports them, so local discovery can't see them. The template leaves out the commands and the raw DPs. DP 120 is read-only, which is why writing to it does nothing.
 
 ### How the map was made
 
-The Tuya app downloads two things for each product: a translation file listing every DP code and enum label, and the device's control panel (a React Native bundle). Both were read from the Tuya Smart app's data on a rooted phone. They give the codes and values but not the code → DP number table, which sits in the app's encrypted storage. The DP numbers were matched to codes by their live values. Each mapping was then confirmed by changing it from Home Assistant and comparing with the Tuya app's screen. Neither Tuya file is included in this repo.
+The device's DP numbers, codes and types come from the thing model in the Tuya Cloud API (Tuya IoT platform, IoT Core). The labels come from the Tuya Smart app's translation file for this product. The mapping was then tested on the real device: each value was changed from Home Assistant and the Tuya app was checked to show the same change. The Tuya files themselves are not included in this repo.
 
 ## How the device behaves
 
